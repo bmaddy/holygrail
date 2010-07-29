@@ -74,5 +74,11 @@ class FunctionalsControllerTest < ActionController::TestCase
     assert_equal '/javascripts/application.js',
       js("document.getElementsByTagName('a')[0].href")
   end
+  
+  test "can easily access current dom" do
+    get :foo
+    js('document.title = "changed title"')
+    assert_select js_dom, "title", :text => "changed title"
+  end
 end
 

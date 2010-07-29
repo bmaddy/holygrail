@@ -75,15 +75,49 @@ module HolyGrail
     #   javascript code exception
     #
     def js(code)
-      XhrProxy.context = self
-      @__page ||= Harmony::Page.new(XHR_MOCK_SCRIPT + rewrite_script_paths(@response.body.to_s))
-      Harmony::Page::Window::BASE_RUNTIME.wait
-      @__page.execute_js(code)
+      # XhrProxy.context = self
+      # @__page ||= Harmony::Page.new(XHR_MOCK_SCRIPT + rewrite_script_paths(@response.body.to_s))
+      # Harmony::Page::Window::BASE_RUNTIME.wait
+      # @__page.execute_js(code)
+      page.execute_js(code)
     end
     alias :execute_javascript :js
+    
+    # Retrieves the current dom from Johnson.
+    #
+    # @example
+    #
+    #     class PeopleControllerTest < ActionController::TestCase
+    #       get :index
+    #       js('document.title = "new title"')
+    #       assert_equal js_dom, 'title', :text => "new title"
+    #     end
+    #
+    # @return [HTML::Node]
+    #   value of the current dom as modified by js() commands, cast to a HTML::Node for easy use in assert_select
+    #
+    # @raise [Johnson::Error]
+    #   javascript code exception
+    #
+    def js_dom
+      HTML::Document.new(page.to_html, false, true).root
+    end
+    
 
     private
 
+    # Retrieves the Harmony::Page
+    #
+    # @return [Harmony::Page]
+    #   current body
+    #
+    def page
+      XhrProxy.context = self
+      @__page ||= Harmony::Page.new(XHR_MOCK_SCRIPT + rewrite_script_paths(@response.body.to_s))
+      Harmony::Page::Window::BASE_RUNTIME.wait
+      @__page
+    end
+    
     # Rewrite relative src paths in <script> tags
     #
     # <script src> tags point to js files relative to public/ directory.

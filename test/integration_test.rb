@@ -105,14 +105,20 @@ class IntegrationControllerTest < ActionController::IntegrationTest
 
   test "xhr with jquery" do
     get '/moo' #loads jquery.js
+    assert_select js_dom, "body", :text => ""
     js(<<-JS)
       $.get("/xhr", function(data, textStatus, xhr){
         document.body.innerHTML = data
       })
     JS
+    # innerHTML should be updated
     assert_equal "xhr response", js(<<-JS).strip
       document.body.innerHTML
     JS
+    # @response.body should be the response from xhr request
+    assert_equal "xhr response", @response.body
+    # the dom should be updated
+    assert_select js_dom, "body", :text => "xhr response"
   end
 end
 
